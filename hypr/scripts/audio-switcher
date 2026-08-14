@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+
+def get_sinks():
+    res = subprocess.run(["pactl", "list", "short", "sinks"], capture_output=True, text=True)
+    sinks = []
+    for line in res.stdout.strip().split("\n"):
+        if not line:
+            continue
+        parts = line.split("\t")
+        if len(parts) >= 2:
+            sinks.append((parts[0], parts[1]))
+    return sinks
+
+def get_default_sink():
+    res = subprocess.run(["pactl", "info"], capture_output=True, text=True)
+    for line in res.stdout.split("\n"):
+        if line.startswith("Default Sink:"):
+            return line.split(":", 1)[1].strip()
+    return ""
+
+def main():
+    sinks = get_sinks()
+    if not sinks:
+        return
+
+    current = get_default_sink()
+    
+    # Prefer active sinks (Speaker & Bluetooth first)
+    active_sinks = [s for s in sinks if "Speaker" in s[1] or "bluez" in s[1]]
+    if not active_sinks:
+        active_sinks = sinks
+
+    next_sink = active_sinks[0]
+    for i, (sid, name) in enumerate(active_sinks):
+        if name == current:
+            next_sink = active_sinks[(i + 1) % len(active_sinks)]
+            break
+
+    sid, name = next_sink
+    subprocess.run(["pactl", "set-default-sink", name])
+
+    if "bluez" in name:
+        label = "🎧 Bluetooth Headphones"
+    elif "Speaker" in name:
+        label = "🔊 Laptop Speakers"
+    elif "HDMI" in name:
+        label = "🖥 HDMI Output"
+    else:
+        label = f"🔊 {name}"
+
+    subprocess.run(["notify-send", "-t", "2000", "-i", "audio-headphones", "Audio Output Changed", label])
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+import json
+import subprocess
+import sys
+import re
+
+# Friendly action descriptions mapping
+DESCRIPTIONS = {
+    ("exec", "kitty"): "Launch Kitty Terminal",
+    ("exec", "terminator"): "Launch Terminator",
+    ("exec", "dolphin"): "Launch Dolphin File Manager",
+    ("exec", "wofi --show drun"): "Application Launcher",
+    ("killactive", ""): "Close Focused Window / Tab",
+    ("exit", ""): "Exit Hyprland Session",
+    ("exec", "hyprlock"): "Lock Screen",
+    ("exec", "hyprctl reload"): "Reload Hyprland Config",
+    ("togglegroup", ""): "Toggle Tabbed Window Group (i3 style)",
+    ("layoutmsg", "togglesplit"): "Toggle Split Direction of Window",
+    ("layoutmsg", "preselect r"): "Preselect Horizontal Split (Right)",
+    ("layoutmsg", "preselect d"): "Preselect Vertical Split (Down)",
+    ("fullscreen", "0"): "Toggle Fullscreen",
+    ("togglefloating", ""): "Toggle Floating Window",
+    ("exec", "hyprctl dispatch moveoutofgroup; hyprctl dispatch togglefloating"): "Eject Window from Group & Toggle Floating/Tiling",
+    ("exec", "/home/oz/.config/hypr/scripts/group-toggle-back"): "Tile Window & Absorb/Join into Tabbed Group",
+    ("exec", "/home/oz/.config/hypr/scripts/audio-switcher"): "Switch Audio Output (Speakers / Headphones)",
+    ("changegroupactive", "f"): "Next Tab in Group (Alt+Tab)",
+    ("changegroupactive", "b"): "Previous Tab in Group (Alt+Shift+Tab)",
+    ("cyclenext", ""): "Focus Next Window (Global)",
+    ("workspace", "previous"): "Toggle Previous Workspace (Back & Forth)",
+    ("workspace", "e+1"): "Next Workspace",
+    ("workspace", "e-1"): "Previous Workspace",
+}
+
+def parse_mod(mask):
+    mods = []
+    if mask & 64: mods.append("Super")
+    if mask & 4:  mods.append("Ctrl")
+    if mask & 8:  mods.append("Alt")
+    if mask & 1:  mods.append("Shift")
+    return " + ".join(mods)
+
+def get_binds():
+    try:
+        res = subprocess.run(["hyprctl", "binds", "-j"], capture_output=True, text=True, check=True)
+        return json.loads(res.stdout)
+    except Exception as e:
+        print(f"Error fetching hyprland binds: {e}", file=sys.stderr)
+        return []
+
+def main():
+    binds = get_binds()
+    if not binds:
+        return
+
+    entries = []
+    action_map = {}
+
+    for b in binds:
+        key = b.get("key", "").strip()
+        disp = b.get("dispatcher", "").strip()
+        arg = b.get("arg", "").strip()
+        mask = b.get("modmask", 0)
+        sub = b.get("submap", "").strip()
+        mouse = b.get("mouse", False)
+
+        if not key and not b.get("keycode"):
+            continue
+
+        # Skip mouse drag/resize bindings in help menu for clutter reduction unless specific
+        if mouse and key in ["272", "273"]:
+            continue
+
+        mod_str = parse_mod(mask)
+        combo = f"{mod_str} + {key}" if mod_str else key
+        if sub:
+            combo = f"[{sub}] {combo}"
+
+        # Determine description
+        lookup_key = (disp, arg)
+        if lookup_key in DESCRIPTIONS:
+            desc = DESCRIPTIONS[lookup_key]
+        elif disp == "exec" and "workspace-toggle" in arg:
+            ws_num = arg.split()[-1]
+            desc = f"Switch to Workspace {ws_num} (Toggle Back & Forth)"
+        elif disp == "movetoworkspace":
+            desc = f"Move Window to Workspace {arg}"
+        elif disp == "movefocus":
+            dir_name = {"l": "Left", "r": "Right", "u": "Up", "d": "Down"}.get(arg, arg)
+            desc = f"Focus Window {dir_name}"
+        elif disp == "movewindoworgroup":
+            dir_name = {"l": "Left", "r": "Right", "u": "Up", "d": "Down"}.get(arg, arg)
+            desc = f"Move Window/Group {dir_name}"
+        elif disp == "exec" and "cliphist" in arg:
+            desc = "Search Clipboard History"
+        elif disp == "exec" and "grim" in arg:
+            desc = "Take Screenshot"
+        elif disp == "exec" and "wpctl" in arg:
+            desc = "Audio Volume / Mute Control"
+        elif disp == "exec" and "brightnessctl" in arg:
+            desc = "Screen Brightness Control"
+        elif disp == "exec" and "playerctl" in arg:
+            desc = "Media Playback Control"
+        elif disp == "submap":
+            desc = f"Enter {arg.capitalize()} Mode"
+        else:
+            desc = f"{disp} {arg}".strip()
+
+        line = f"{combo:<36} ➜   {desc}"
+        entries.append(line)
+        action_map[line] = (disp, arg)
+
+    # Pass formatted entries to Wofi
+    input_str = "\n".join(entries)
+    try:
+        wofi_proc = subprocess.run(
+            ["wofi", "--show", "dmenu", "--prompt", "⌨ Hyprland Keybindings", "--width", "700", "--height", "500"],
+            input=input_str,
+            capture_output=True,
+            text=True
+        )
+        selected = wofi_proc.stdout.strip()
+        if selected and selected in action_map:
+            disp, arg = action_map[selected]
+            # Execute selected action if user clicks an item!
+            if disp == "exec":
+                subprocess.Popen(arg, shell=True)
+            elif disp:
+                subprocess.run(["hyprctl", "dispatch", disp, arg])
+    except Exception as e:
+        print(f"Error launching wofi keyhint: {e}", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()

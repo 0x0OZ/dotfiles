@@ -1,0 +1,213 @@
+/* ── Deep Purple / Violet Theme Palette ── */
+@define-color bg          #13111c;
+@define-color surface     #1e1a2e;
+@define-color surface_bright #2d2645;
+@define-color text        #e2d9f3;
+@define-color subtext     #b6a6d6;
+@define-color purple_main #cba6f7;
+@define-color purple_vibrant #a855f7;
+@define-color purple_dark #7e22ce;
+@define-color lavender    #b4befe;
+@define-color magenta     #f5c2e7;
+@define-color orchid      #e8a2f7;
+@define-color violet_soft #d8b4fe;
+@define-color danger      #f38ba8;
+
+/* ── Reset ── */
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans", "Symbols Nerd Font";
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 0;
+}
+
+/* ── Main Bar ── */
+window#waybar {
+    background: transparent;
+    color: @text;
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+    background: alpha(@bg, 0.94);
+    border-radius: 14px;
+    border: 1px solid alpha(@purple_main, 0.35);
+    margin: 0 4px;
+    padding: 2px 4px;
+    box-shadow: 0 4px 15px alpha(#000000, 0.5);
+}
+
+/* ── Module Pills ── */
+#custom-launcher,
+#workspaces,
+#window,
+#clock,
+#idle_inhibitor,
+#pulseaudio,
+#network,
+#backlight,
+#battery,
+#tray,
+#custom-power {
+    padding: 0 12px;
+    margin: 3px 2px;
+    border-radius: 9px;
+    color: @text;
+    transition: all 0.2s ease-in-out;
+}
+
+/* ── Launcher (App Menu) ── */
+#custom-launcher {
+    color: @purple_main;
+    font-size: 20px;
+    padding: 0 14px;
+    background: alpha(@purple_main, 0.15);
+}
+#custom-launcher:hover {
+    background: alpha(@purple_vibrant, 0.35);
+    color: @magenta;
+}
+
+/* ── Workspaces ── */
+#workspaces {
+    padding: 0 4px;
+    background: transparent;
+}
+#workspaces button {
+    font-weight: 700;
+    font-size: 13px;
+    padding: 0 11px;
+    margin: 2px 3px;
+    border-radius: 8px;
+    color: @subtext;
+    background: alpha(@surface, 0.6);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+#workspaces button.active {
+    background: linear-gradient(135deg, @purple_vibrant, @purple_main);
+    color: #13111c;
+    border: 1px solid alpha(@magenta, 0.5);
+    box-shadow: 0 2px 10px alpha(@purple_vibrant, 0.5);
+}
+#workspaces button:hover {
+    background: alpha(@surface_bright, 0.9);
+    color: @text;
+    border: 1px solid alpha(@purple_main, 0.3);
+}
+#workspaces button.urgent {
+    background: alpha(@danger, 0.4);
+    color: @danger;
+}
+
+/* ── Window Title ── */
+#window {
+    color: @subtext;
+    font-size: 12px;
+    font-style: italic;
+    background: transparent;
+}
+
+/* ── Clock Center ── */
+#clock {
+    font-size: 15px;
+    font-weight: 700;
+    color: @magenta;
+    background: alpha(@surface_bright, 0.7);
+    border: 1px solid alpha(@purple_main, 0.25);
+    padding: 0 20px;
+}
+#clock:hover {
+    background: alpha(@surface_bright, 1.0);
+    color: @purple_main;
+    border: 1px solid alpha(@purple_main, 0.5);
+}
+
+/* ── Right Modules (All Purple / Violet / Lavender Palette) ── */
+#idle_inhibitor {
+    color: @subtext;
+    font-size: 15px;
+}
+#idle_inhibitor.activated {
+    color: @magenta;
+    background: alpha(@magenta, 0.18);
+}
+
+#pulseaudio {
+    color: @lavender;
+    background: alpha(@lavender, 0.12);
+}
+#pulseaudio.muted {
+    color: @subtext;
+    background: transparent;
+}
+#pulseaudio:hover {
+    background: alpha(@lavender, 0.28);
+}
+
+#network {
+    color: @purple_main;
+    background: alpha(@purple_main, 0.12);
+}
+#network.disconnected {
+    color: @danger;
+    background: alpha(@danger, 0.15);
+}
+#network:hover {
+    background: alpha(@purple_main, 0.28);
+}
+
+#language {
+    color: @lavender;
+    background: alpha(@lavender, 0.12);
+}
+#language:hover {
+    background: alpha(@lavender, 0.28);
+}
+
+#backlight {
+    color: @orchid;
+    background: alpha(@orchid, 0.12);
+}
+#backlight:hover {
+    background: alpha(@orchid, 0.28);
+}
+
+#battery {
+    color: @violet_soft;
+    background: alpha(@violet_soft, 0.12);
+}
+#battery.charging, #battery.plugged {
+    color: @magenta;
+    background: alpha(@magenta, 0.18);
+}
+#battery.warning:not(.charging) {
+    color: @orchid;
+    background: alpha(@orchid, 0.2);
+}
+#battery.critical:not(.charging) {
+    color: @danger;
+    background: alpha(@danger, 0.25);
+}
+#battery:hover {
+    background: alpha(@violet_soft, 0.28);
+}
+
+#tray {
+    background: transparent;
+    padding: 0 8px;
+}
+
+#custom-power {
+    color: @danger;
+    font-size: 16px;
+    padding: 0 12px;
+    background: alpha(@danger, 0.12);
+}
+#custom-power:hover {
+    background: alpha(@danger, 0.3);
+    color: @magenta;
+}

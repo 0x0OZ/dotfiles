@@ -1,0 +1,7 @@
+show=drun
+width=40%
+height=45%
+prompt=Search
+allow_images=true
+insensitive=true
+term=konsole

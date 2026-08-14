@@ -1,0 +1,37 @@
+[global_config]
+  title_transmit_bg = "#cba6f7"
+  title_transmit_fg = "#13111c"
+  title_inactive_bg = "#1e1a2e"
+  title_inactive_fg = "#b6a6d6"
+  title_receive_bg = "#a855f7"
+  title_receive_fg = "#13111c"
+  suppress_multiple_term_dialog = True
+  tab_position = top
+  focus = system
+
+[keybindings]
+
+[profiles]
+  [[default]]
+    font = JetBrainsMono Nerd Font 14
+    use_system_font = False
+    background_color = "#13111c"
+    foreground_color = "#e2d9f3"
+    cursor_color = "#cba6f7"
+    cursor_shape = ibeam
+    cursor_blink = True
+    show_titlebar = False
+    scrollbar_position = hidden
+    background_darkness = 0.92
+    background_type = transparent
+    palette = "#261d36:#f38ba8:#b4befe:#f9e2af:#9333ea:#cba6f7:#b4befe:#e2d9f3:#584475:#f5c2e7:#d8b4fe:#f9e2af:#a855f7:#e8a2f7:#d8b4fe:#ffffff"
+    use_theme_colors = False
+
+[layouts]
+  [[default]]
+    [[[window0]]]
+      type = Window
+      parent = ""
+    [[[child1]]]
+      type = Terminal
+      parent = window0

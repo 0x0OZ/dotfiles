@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+import json
+import subprocess
+import sys
+
+def dispatch(cmd):
+    subprocess.run(["hyprctl", "dispatch"] + cmd.split(), check=False)
+
+def get_json(cmd):
+    try:
+        res = subprocess.run(["hyprctl"] + cmd + ["-j"], capture_output=True, text=True, check=True)
+        return json.loads(res.stdout)
+    except:
+        return {}
+
+def main():
+    win = get_json(["activewindow"])
+    if not win or "address" not in win:
+        return
+
+    is_floating = win.get("floating", False)
+    is_grouped = len(win.get("grouped", [])) > 0
+    ws_id = win.get("workspace", {}).get("id")
+
+    # 1. If window is floating, turn off floating first so it becomes tiled
+    if is_floating:
+        dispatch("togglefloating")
+
+    # 2. If window is not currently part of a group, join an existing group or toggle a group
+    if not is_grouped:
+        clients = get_json(["clients"])
+        grouped_found = False
+        if isinstance(clients, list):
+            for c in clients:
+                if c.get("workspace", {}).get("id") == ws_id and len(c.get("grouped", [])) > 0 and c.get("address") != win.get("address"):
+                    grouped_found = True
+                    break
+
+        if grouped_found:
+            # Attempt to join adjacent group in left/right/up/down direction
+            for d in ["l", "r", "u", "d"]:
+                dispatch(f"moveintogroup {d}")
+        else:
+            # Fallback: create/toggle a group on the window
+            dispatch("togglegroup")
+
+if __name__ == "__main__":
+    main()

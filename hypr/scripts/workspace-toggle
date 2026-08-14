@@ -1,0 +1,8 @@
+#!/bin/bash
+# Toggle workspace: if already on the target, go back to previous.
+CURRENT=$(hyprctl activeworkspace -j | jq -r '.id')
+if [ "$CURRENT" = "$1" ]; then
+    hyprctl dispatch workspace previous
+else
+    hyprctl dispatch workspace "$1"
+fi

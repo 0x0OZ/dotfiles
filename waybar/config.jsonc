@@ -1,0 +1,106 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 40,
+  "spacing": 0,
+  "margin-top": 6,
+  "margin-left": 12,
+  "margin-right": 12,
+
+  "modules-left":   ["custom/launcher", "hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock"],
+  "modules-right":  ["idle_inhibitor", "pulseaudio", "network", "hyprland/language", "backlight", "battery", "tray", "custom/power"],
+
+  "custom/launcher": {
+    "format": "  ",
+    "on-click": "wofi --show drun",
+    "tooltip": false
+  },
+
+  "hyprland/workspaces": {
+    "format": "{name}",
+    "on-click": "activate",
+    "sort-by-number": true
+  },
+
+  "hyprland/window": {
+    "format": "  {}",
+    "max-length": 55,
+    "separate-outputs": true,
+    "rewrite": {
+      "(.*) — Mozilla Firefox": "󰈹  Firefox — $1",
+      "(.*) - Dolphin": "󰉋  Dolphin — $1",
+      "oz@OZ:(.*)": "󰆍  Terminal: $1",
+      "(.*)kitty(.*)": "󰄛  Kitty Terminal",
+      "(.*)terminator(.*)": "󰆍  Terminator",
+      "Minecraft(.*)": "󰍳  Minecraft",
+      "(.*) - Visual Studio Code": "󰨞  VS Code — $1",
+      "(.*) - Discord": "󰙯  Discord — $1",
+      "(.*) - Spotify": "  Spotify — $1"
+    }
+  },
+
+  "clock": {
+    "format": "󰃭  {:%a, %d %b  ·  %H:%M}",
+    "format-alt": "󰃭  {:%A, %d %B %Y  ·  %H:%M:%S}",
+    "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>",
+    "interval": 1
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": { "activated": "󰅶", "deactivated": "󰾪" },
+    "tooltip-format-activated": "Idle inhibitor ON",
+    "tooltip-format-deactivated": "Idle inhibitor OFF"
+  },
+
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": "󰖁  muted",
+    "format-icons": { "default": ["󰕿", "󰖀", "󰕾"] },
+    "on-click": "pavucontrol",
+    "scroll-step": 5,
+    "tooltip-format": "{desc} — {volume}%"
+  },
+
+  "network": {
+    "format-wifi": "  {signalStrength}%",
+    "format-ethernet": "󰈀  {ifname}",
+    "format-disconnected": "󰖪  offline",
+    "tooltip-format": "{ifname}: {ipaddr}/{cidr}\n{essid} ({signalStrength}%)",
+    "interval": 5
+  },
+
+  "hyprland/language": {
+    "format": "󰌌  {}",
+    "format-ar": "󰌌  عربي",
+    "format-en": "󰌌  EN",
+    "on-click": "hyprctl switchxkblayout current next"
+  },
+
+  "backlight": {
+    "format": "{icon}  {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃟", "󰃠"],
+    "scroll-step": 5
+  },
+
+  "battery": {
+    "format": "{icon}  {capacity}%",
+    "format-charging": "󰂄  {capacity}%",
+    "format-plugged": "󰚥  {capacity}%",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+    "states": { "warning": 30, "critical": 15 },
+    "interval": 30
+  },
+
+  "tray": {
+    "spacing": 8,
+    "icon-size": 16
+  },
+
+  "custom/power": {
+    "format": "⏻",
+    "on-click": "wofi --show dmenu <<< $'Logout\\nSuspend\\nReboot\\nShutdown' | xargs -I{} sh -c 'case \"{}\" in Logout) hyprctl dispatch exit;; Suspend) systemctl suspend;; Reboot) systemctl reboot;; Shutdown) systemctl poweroff;; esac'",
+    "tooltip": false
+  }
+}

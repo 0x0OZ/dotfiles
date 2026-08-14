@@ -1,0 +1,58 @@
+#!/bin/bash
+# gpu-power-manager: Auto suspend/wake NVIDIA GPU based on AC power status.
+# - On battery: suspend the dGPU to save power
+# - On AC: wake the dGPU so prime-run works instantly
+#
+# This does NOT change the rendering GPU (that requires re-login).
+# Desktop always renders on Intel (efficient). Games use prime-run on NVIDIA.
+
+NVIDIA_PCI="0000:01:00.0"
+POWER_SUPPLY="/sys/class/power_supply/ADP1/online"
+# Fallback power supply paths
+[ ! -f "$POWER_SUPPLY" ] && POWER_SUPPLY="/sys/class/power_supply/ADP0/online"
+[ ! -f "$POWER_SUPPLY" ] && POWER_SUPPLY="/sys/class/power_supply/ADP1/online"
+[ ! -f "$POWER_SUPPLY" ] && POWER_SUPPLY="$(find /sys/class/power_supply/*/online 2>/dev/null | head -1)"
+
+get_ac_status() {
+    if [ -f "$POWER_SUPPLY" ]; then
+        cat "$POWER_SUPPLY"
+    else
+        echo "1" # default to AC if can't detect
+    fi
+}
+
+on_ac() {
+    echo "auto" > /sys/bus/pci/devices/$NVIDIA_PCI/power/control
+    echo "[GPU] AC connected — NVIDIA available for prime-run"
+}
+
+on_battery() {
+    # Only suspend if nothing is using the GPU
+    if ! nvidia-smi -q 2>/dev/null | grep -q "Running"; then
+        echo "auto" > /sys/bus/pci/devices/$NVIDIA_PCI/power/control
+        echo "[GPU] Battery mode — NVIDIA in auto-suspend"
+    else
+        echo "[GPU] Battery mode — NVIDIA in use, skipping suspend"
+    fi
+}
+
+case "${1:-auto}" in
+    ac)       on_ac ;;
+    battery)  on_battery ;;
+    auto)
+        if [ "$(get_ac_status)" = "1" ]; then
+            on_ac
+        else
+            on_battery
+        fi
+        ;;
+    status)
+        echo "AC: $(get_ac_status) (1=plugged, 0=battery)"
+        echo "NVIDIA power: $(cat /sys/bus/pci/devices/$NVIDIA_PCI/power/runtime_status 2>/dev/null)"
+        echo "NVIDIA control: $(cat /sys/bus/pci/devices/$NVIDIA_PCI/power/control 2>/dev/null)"
+        ;;
+    *)
+        echo "Usage: gpu-power-manager {ac|battery|auto|status}"
+        exit 1
+        ;;
+esac
