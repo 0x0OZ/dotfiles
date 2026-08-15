@@ -1,0 +1,11 @@
+[Unit]
+Description=Swaybg Wallpaper Service
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/swaybg -i /home/oz/.config/hypr/wallpapers/purple_landscape.png -m fill
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=default.target
