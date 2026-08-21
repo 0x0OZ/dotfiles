@@ -1,10 +1,10 @@
 [global_config]
-  title_transmit_bg = "#cba6f7"
-  title_transmit_fg = "#13111c"
-  title_inactive_bg = "#1e1a2e"
-  title_inactive_fg = "#b6a6d6"
-  title_receive_bg = "#a855f7"
-  title_receive_fg = "#13111c"
+  title_transmit_bg = "#10b981"
+  title_transmit_fg = "#0a0c10"
+  title_inactive_bg = "#111827"
+  title_inactive_fg = "#9ca3af"
+  title_receive_bg = "#059669"
+  title_receive_fg = "#0a0c10"
   suppress_multiple_term_dialog = True
   tab_position = top
   focus = system
@@ -15,16 +15,16 @@
   [[default]]
     font = JetBrainsMono Nerd Font 14
     use_system_font = False
-    background_color = "#13111c"
-    foreground_color = "#e2d9f3"
-    cursor_color = "#cba6f7"
+    background_color = "#0a0c10"
+    foreground_color = "#f0f6fc"
+    cursor_color = "#00ff87"
     cursor_shape = ibeam
     cursor_blink = True
     show_titlebar = False
     scrollbar_position = hidden
-    background_darkness = 0.92
+    background_darkness = 0.95
     background_type = transparent
-    palette = "#261d36:#f38ba8:#b4befe:#f9e2af:#9333ea:#cba6f7:#b4befe:#e2d9f3:#584475:#f5c2e7:#d8b4fe:#f9e2af:#a855f7:#e8a2f7:#d8b4fe:#ffffff"
+    palette = "#161b22:#f85149:#10b981:#f59e0b:#38bdf8:#c084fc:#2dd4bf:#f0f6fc:#484f58:#ff6e6e:#00ff87:#fbbf24:#60a5fa:#e879f9:#34d399:#ffffff"
     use_theme_colors = False
 
 [layouts]
