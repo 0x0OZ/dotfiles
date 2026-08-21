@@ -47,41 +47,42 @@ alias ports='ss -tulpn'
 # find-the-command: suggests packages when command not found
 source /usr/share/doc/find-the-command/ftc.zsh quiet
 
-# Alias neofetch to modern fastfetch
-alias neofetch='fastfetch'
-
-# Enhanced find-the-command handler with similarity & fuzzy search
+# Enhanced find-the-command handler with generic similarity & typo recovery
 command_not_found_handler() {
     local cmd="$1"
-    
-    # 1. Check alias / replacement advice for archived tools
-    if [[ "$cmd" == "neofetch" ]]; then
-        echo -e "\033[1;33mfind-the-command:\033[0m '\033[1;36mneofetch\033[0m' was archived & removed from Arch repos. Running \033[1;35mfastfetch\033[0m:\n"
-        fastfetch "$@[2,-1]"
-        return 0
-    fi
 
-    # 2. Try standard find-the-command handler
-    if declare -f command_not_found_handle >/dev/null 2>&1; then
-        command_not_found_handle "$@"
-        local ret=$?
-        if [[ $ret -ne 127 ]]; then
-            return $ret
-        fi
-    fi
-
-    # 3. Fuzzy / similarity search via pkgfile
     if type pkgfile &>/dev/null; then
-        local matches=($(pkgfile --binaries -r ".*${cmd}.*" 2>/dev/null | head -10))
-        if [[ ${#matches[@]} -eq 0 && ${#cmd} -ge 3 ]]; then
-            local sub="${cmd:0:3}"
-            matches=($(pkgfile --binaries -r ".*${sub}.*" 2>/dev/null | head -10))
+        # 1. Exact binary lookup in package repos
+        local pkgs=($(pkgfile --binaries -- "$cmd" 2>/dev/null))
+        if [[ ${#pkgs[@]} -gt 0 ]]; then
+            echo -e "\033[1;33mfind-the-command:\033[0m Command '\033[1;36m$cmd\033[0m' can be found in package(s):"
+            for p in "${pkgs[@]}"; do
+                echo -e "  \033[1;32m➜\033[0m \033[1;35m$p\033[0m"
+            done
+            return 0
+        fi
+
+        # 2. Similarity & Typo Recovery search
+        local matches=()
+        local search_term="$cmd"
+        while [[ ${#search_term} -ge 3 && ${#matches[@]} -eq 0 ]]; do
+            matches=($(pkgfile --binaries -r ".*${search_term}.*" 2>/dev/null | head -10))
+            if [[ ${#matches[@]} -eq 0 ]]; then
+                search_term="${search_term:0:-1}"
+            fi
+        done
+
+        # Sub-word token fallback for compound command names
+        if [[ ${#matches[@]} -le 1 && ${#cmd} -ge 5 ]]; then
+            local token="${cmd: -5}"
+            local extra_matches=($(pkgfile --binaries -r ".*${token}.*" 2>/dev/null | head -5))
+            matches=(${matches[@]} ${extra_matches[@]})
         fi
 
         if [[ ${#matches[@]} -gt 0 ]]; then
-            echo -e "\033[1;33mfind-the-command:\033[0m Command '\033[1;31m$cmd\033[0m' not found. Did you mean one of these?"
-            for pkg in "${matches[@]}"; do
-                echo -e "  \033[1;32m➜\033[0m \033[1;35m$pkg\033[0m"
+            echo -e "\033[1;33mfind-the-command:\033[0m Command '\033[1;31m$cmd\033[0m' not found. Similar package suggestions:"
+            for p in "${matches[@]}"; do
+                echo -e "  \033[1;32m➜\033[0m \033[1;35m$p\033[0m"
             done
             return 0
         fi
